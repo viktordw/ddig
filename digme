@@ -1,0 +1,57 @@
+#!/bin/bash
+
+# ------------------------------------------------------
+# DNS QUICK CHECK TOOL
+# ------------------------------------------------------
+
+# DIG A
+hostname=`dig "$1" +short 2>/dev/null | xargs dig +short -x 2>/dev/null | sed 's/^.* \([^ ][^ ]*\)/\1/g;s/\.$//'`
+a_ip=`dig "$1" +short 2>/dev/null | head -n 1`
+
+# DIG WWW
+www_cname_test=`dig "www.$1" 2>/dev/null | grep 'ANSWER SECTION:' -A 1 | grep CNAME`
+www_cname_dest=`dig "www.$1" +short 2>/dev/null | sed '1d' | head -n 1`
+www_dig_a=`dig "www.$1" +short 2>/dev/null | head -n 1 | sed 's/\\.$//'`
+
+# DIG MX
+# Prva sed komanda bira poslednju reč iz output-a
+# Druga sed komanda radi dve stvari:
+#  - uklanja tačku na kraju
+#  - dodaje dva razmaka (soft tab) na početku svake nove linije
+mx_dig=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | sed 's/\\.$//;s/^/  /'`
+mx_ip=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2>/dev/null`
+
+# DIG NS
+ns_dig=`dig ns "$1" +short 2>/dev/null | sed 's/.* //' | sed 's/\\.$//;s/^/  /'`
+
+echo "Results for domain: $1"
+[ -n "$a_ip" ] && echo "IP address: $a_ip" || echo "IP address: not found"
+[ -n "$a_ip" ] && echo "Hostname: $hostname" || echo "Hostname: not found"
+
+if [ -n "$www_cname_test" ]; then
+  echo "WWW Type: CNAME"
+  echo "CNAME Pointer: $www_dig_a"
+  echo "CNAME IP: $www_cname_dest"
+elif [ -n "$www_dig_a" ]; then
+  echo "WWW Type: A"
+  echo "WWW IP: $www_dig_a"
+else
+  echo "WWW Type: not found"
+  echo "WWW IP: not found"
+fi
+
+echo "MX Data:"
+if [ -n "$mx_dig" ]; then
+  echo "$mx_dig"
+  echo "MX IP: $mx_ip"
+else
+  echo "  not found"
+  echo "MX IP: not found"
+fi
+
+echo "DNS Servers: "
+if [ -n "$ns_dig" ]; then
+  echo "$ns_dig"
+else
+  echo "  not found"
+fi
