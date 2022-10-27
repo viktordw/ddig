@@ -5,7 +5,7 @@
 # ------------------------------------------------------
 
 # DIG A
-hostname=`dig "$1" +short 2>/dev/null | xargs dig +short -x 2>/dev/null | sed 's/^.* \([^ ][^ ]*\)/\1/g;s/\.$//'`
+hostname=`dig "$1" +short 2>/dev/null | xargs dig +short -x 2>/dev/null | sed 's/\.$//'`
 a_ip=`dig "$1" +short 2>/dev/null | head -n 1`
 
 # DIG WWW
@@ -19,7 +19,7 @@ www_dig_a=`dig "www.$1" +short 2>/dev/null | head -n 1 | sed 's/\\.$//'`
 #  - uklanja tačku na kraju
 #  - dodaje dva razmaka (soft tab) na početku svake nove linije
 mx_dig=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | sed 's/\\.$//;s/^/  /'`
-mx_ip=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2>/dev/null`
+mx_ip=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2>/dev/null | head -n 1`
 
 # DIG NS
 ns_dig=`dig ns "$1" +short 2>/dev/null | sed 's/.* //' | sed 's/\\.$//;s/^/  /'`
