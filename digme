@@ -22,7 +22,7 @@ mx_dig=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | sed 's/\\.$//;s/^/  /'`
 mx_ip=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2>/dev/null | head -n 1`
 
 # DIG NS
-ns_dig=`dig ns "$1" +short 2>/dev/null | sed 's/.* //' | sed 's/\\.$//;s/^/  /'`
+ns_dig=`dig ns "$1" +short 2>/dev/null | sed 's/\\.$//;s/^/  /'`
 
 echo "Results for domain: $1"
 [ -n "$a_ip" ] && echo "IP address: $a_ip" || echo "IP address: not found"
