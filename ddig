@@ -4,6 +4,8 @@
 # DNS QUICK CHECK TOOL
 # ------------------------------------------------------
 
+if [ $# -eq 0 ]; then echo "Usage: ddig example.com" && exit 0; fi
+
 # DIG A
 hostname=`dig "$1" +short 2>/dev/null | xargs dig +short -x 2>/dev/null | sed 's/\.$//'`
 a_ip=`dig "$1" +short 2>/dev/null | head -n 1`
