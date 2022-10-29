@@ -2,9 +2,12 @@
 
 # ------------------------------------------------------
 # DNS QUICK CHECK TOOL
+# https://github.com/sitemapxml/ddig
 # ------------------------------------------------------
 
 if [ $# -eq 0 ]; then echo "Usage: ddig example.com" && exit 0; fi
+
+line=`printf '=%.0s' {1..50} && printf '\n'`
 
 # DIG A
 hostname=`dig "$1" +short 2>/dev/null | xargs dig +short -x 2>/dev/null | sed 's/\.$//'`
@@ -14,6 +17,7 @@ a_ip=`dig "$1" +short 2>/dev/null | head -n 1`
 www_cname_test=`dig "www.$1" 2>/dev/null | grep 'ANSWER SECTION:' -A 1 | grep CNAME`
 www_cname_dest=`dig "www.$1" +short 2>/dev/null | sed '1d' | head -n 1`
 www_dig_a=`dig "www.$1" +short 2>/dev/null | head -n 1 | sed 's/\\.$//'`
+www_hostname=`dig "www.$1" +short 2>/dev/null | head -n 1 | sed 's/\\.$//' | xargs dig +short -x 2>/dev/null`
 
 # DIG MX
 # Prva sed komanda bira poslednju reč iz output-a
@@ -22,13 +26,16 @@ www_dig_a=`dig "www.$1" +short 2>/dev/null | head -n 1 | sed 's/\\.$//'`
 #  - dodaje dva razmaka (soft tab) na početku svake nove linije
 mx_dig=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | sed 's/\\.$//;s/^/  /'`
 mx_ip=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2>/dev/null | head -n 1`
+mx_hostname=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2>/dev/null | head -n 1 | xargs dig +short -x 2>/dev/null`
 
 # DIG NS
 ns_dig=`dig ns "$1" +short 2>/dev/null | sed 's/\\.$//;s/^/  /'`
 
-echo "Results for domain: $1"
+echo "$line" ; echo "Results for domain: $1" ; echo "$line"
+
 [ -n "$a_ip" ] && echo "IP address: $a_ip" || echo "IP address: not found"
 [ -n "$a_ip" ] && echo "Hostname: $hostname" || echo "Hostname: not found"
+echo
 
 if [ -n "$www_cname_test" ]; then
   echo "WWW Type: CNAME"
@@ -37,23 +44,26 @@ if [ -n "$www_cname_test" ]; then
 elif [ -n "$www_dig_a" ]; then
   echo "WWW Type: A"
   echo "WWW IP: $www_dig_a"
+  echo "WWW Hostname: $www_hostname"
 else
   echo "WWW Type: not found"
   echo "WWW IP: not found"
 fi
 
-echo "MX Data:"
+echo ; echo "MX Data:"
 if [ -n "$mx_dig" ]; then
   echo "$mx_dig"
   echo "MX IP: $mx_ip"
+  echo "MX Hostname: $mx_hostname"
 else
   echo "  not found"
   echo "MX IP: not found"
 fi
 
-echo "DNS Servers: "
+echo ; echo "DNS Servers: "
 if [ -n "$ns_dig" ]; then
   echo "$ns_dig"
 else
   echo "  not found"
 fi
+echo "$line"
