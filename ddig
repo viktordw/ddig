@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ------------------------------------------------------
-# DNS QUICK CHECK TOOL
+# DDIG - DNS QUICK CHECK TOOL
 # https://github.com/sitemapxml/ddig
 # ------------------------------------------------------
 
@@ -32,7 +32,6 @@ mx_hostname=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2
 ns_dig=`dig ns "$1" +short 2>/dev/null | sed 's/\\.$//;s/^/  /'`
 
 echo "$line" ; echo "Results for domain: $1" ; echo "$line"
-
 [ -n "$a_ip" ] && echo "IP address: $a_ip" || echo "IP address: not found"
 [ -n "$a_ip" ] && echo "Hostname: $hostname" || echo "Hostname: not found"
 echo
