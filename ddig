@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # ------------------------------------------------------
-# DDIG - DNS QUICK CHECK TOOL
-# https://github.com/viktordw/ddig
+# DDIG - DNS QUICK CHECK TOOL by @viktordw
+# https://github.com/dreamwebhost/ddig
 # ------------------------------------------------------
 
 if [ $# -eq 0 ]; then echo "Usage: ddig example.com" && exit 0; fi
