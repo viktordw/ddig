@@ -16,8 +16,9 @@ a_ip=`dig "$1" +short 2>/dev/null | head -n 1`
 # DIG WWW
 www_cname_test=`dig "www.$1" 2>/dev/null | grep 'ANSWER SECTION:' -A 1 | grep CNAME`
 www_cname_dest=`dig "www.$1" +short 2>/dev/null | sed '1d' | head -n 1`
+www_cname_host=`dig "www.$1" +short 2>/dev/null | sed '1d' | head -n 1 | xargs dig +short -x 2>/dev/null | sed 's/\.$//'`
 www_dig_a=`dig "www.$1" +short 2>/dev/null | head -n 1 | sed 's/\\.$//'`
-www_hostname=`dig "www.$1" +short 2>/dev/null | head -n 1 | sed 's/\\.$//' | xargs dig +short -x 2>/dev/null`
+www_hostname=`dig "www.$1" +short 2>/dev/null | head -n 1 | sed 's/\\.$//' | xargs dig +short -x 2>/dev/null | sed 's/\.$//'`
 
 # DIG MX
 # Prva sed komanda bira poslednju reč iz output-a
@@ -26,7 +27,7 @@ www_hostname=`dig "www.$1" +short 2>/dev/null | head -n 1 | sed 's/\\.$//' | xar
 #  - dodaje dva razmaka (soft tab) na početku svake nove linije
 mx_dig=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | sed 's/\\.$//;s/^/  /'`
 mx_ip=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2>/dev/null | head -n 1`
-mx_hostname=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2>/dev/null | head -n 1 | xargs dig +short -x 2>/dev/null`
+mx_hostname=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2>/dev/null | head -n 1 | xargs dig +short -x 2>/dev/null | sed 's/\.$//'`
 
 # DIG NS
 ns_dig=`dig ns "$1" +short 2>/dev/null | sed 's/\\.$//;s/^/  /'`
@@ -40,6 +41,7 @@ if [ -n "$www_cname_test" ]; then
   echo "WWW Type: CNAME"
   echo "CNAME Pointer: $www_dig_a"
   echo "CNAME IP: $www_cname_dest"
+  echo "CNAME Host: $www_cname_host"
 elif [ -n "$www_dig_a" ]; then
   echo "WWW Type: A"
   echo "WWW IP: $www_dig_a"
