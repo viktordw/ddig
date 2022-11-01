@@ -51,7 +51,7 @@ else
   echo "WWW IP: not found"
 fi
 
-echo ; echo "MX Data:"
+echo ; echo "MX Records:"
 if [ -n "$mx_dig" ]; then
   echo "$mx_dig"
   echo "MX IP: $mx_ip"
