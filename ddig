@@ -12,27 +12,28 @@ line=`printf '=%.0s' {1..50} && printf '\n'`
 
 fn_dig () { dig "$1" "$2" +short 2>/dev/null ; }
 fn_rdig () { xargs dig +short -x 2>/dev/null ; }
-fn_rmdot () { :; }
+fn_rmdot () { sed 's/\.$//' ; }
+fn_last () { sed 's/.* //' ; }
 
 # DIG A
-hostname=`fn_dig A "$input" | fn_rdig | sed 's/\.$//'`
+hostname=`fn_dig A "$input" | fn_rdig | fn_rmdot`
 a_ip=`fn_dig A "$input" | head -n 1`
 
 # DIG WWW
 www_cname_test=`fn_dig A "www.${input}" | grep 'ANSWER SECTION:' -A 1 | grep CNAME`
 www_cname_dest=`fn_dig A "www.${input}" | sed '1d'`
-www_cname_host=`fn_dig A "www.${input}" | sed '1d' | head -n 1 | fn_rdig | sed 's/\.$//'`
+www_cname_host=`fn_dig A "www.${input}" | sed '1d' | head -n 1 | fn_rdig | fn_rmdot`
 www_dig_a=`fn_dig A "www.${input}" | head -n 1`
-www_hostname=`fn_dig A "www.${input}" | head -n 1 | sed 's/\\.$//' | fn_rdig | sed 's/\.$//'`
+www_hostname=`fn_dig A "www.${input}" | head -n 1 | sed 's/\\.$//' | fn_rdig | fn_rmdot`
 
 # DIG MX
 # Prva sed komanda bira poslednju reč iz output-a
 # Druga sed komanda radi dve stvari:
 #  - uklanja tačku na kraju
 #  - dodaje dva razmaka (soft tab) na početku svake nove linije
-mx_dig=`fn_dig MX "$input" | sed 's/.* //' | sed 's/\\.$//;s/^/  /'`
-mx_ip=`fn_dig MX "$input" | sed 's/.* //' | xargs dig +short 2>/dev/null | head -n 1`
-mx_hostname=`fn_dig MX "$input" | sed 's/.* //' | xargs dig +short 2>/dev/null | fn_rdig | sed 's/\.$//'`
+mx_dig=`fn_dig MX "$input" | fn_last | sed 's/\\.$//;s/^/  /'`
+mx_ip=`fn_dig MX "$input" | fn_last | fn_dig A "$input" | head -n 1`
+mx_hostname=`fn_dig MX "$input" | fn_last | xargs fn_dig A "$input" | fn_rdig | fn_rmdot`
 
 # DIG NS
 ns_dig=`fn_dig A "$input" | sed 's/\\.$//;s/^/  /'`
