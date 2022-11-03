@@ -7,30 +7,35 @@
 
 if [ $# -eq 0 ]; then echo "Usage: ddig example.com" && exit 0; fi
 
+input="$1"
 line=`printf '=%.0s' {1..50} && printf '\n'`
 
+fn_dig () { dig "$1" "$2" +short 2>/dev/null ; }
+fn_rdig () { xargs dig +short -x 2>/dev/null ; }
+fn_rmdot () { :; }
+
 # DIG A
-hostname=`dig "$1" +short 2>/dev/null | xargs dig +short -x 2>/dev/null | sed 's/\.$//'`
-a_ip=`dig "$1" +short 2>/dev/null | head -n 1`
+hostname=`fn_dig A "$input" | fn_rdig | sed 's/\.$//'`
+a_ip=`fn_dig A "$input" | head -n 1`
 
 # DIG WWW
-www_cname_test=`dig "www.$1" 2>/dev/null | grep 'ANSWER SECTION:' -A 1 | grep CNAME`
-www_cname_dest=`dig "www.$1" +short 2>/dev/null | sed '1d' | head -n 1`
-www_cname_host=`dig "www.$1" +short 2>/dev/null | sed '1d' | head -n 1 | xargs dig +short -x 2>/dev/null | sed 's/\.$//'`
-www_dig_a=`dig "www.$1" +short 2>/dev/null | head -n 1 | sed 's/\\.$//'`
-www_hostname=`dig "www.$1" +short 2>/dev/null | head -n 1 | sed 's/\\.$//' | xargs dig +short -x 2>/dev/null | sed 's/\.$//'`
+www_cname_test=`fn_dig A "www.${input}" | grep 'ANSWER SECTION:' -A 1 | grep CNAME`
+www_cname_dest=`fn_dig A "www.${input}" | sed '1d'`
+www_cname_host=`fn_dig A "www.${input}" | sed '1d' | head -n 1 | fn_rdig | sed 's/\.$//'`
+www_dig_a=`fn_dig A "www.${input}" | head -n 1`
+www_hostname=`fn_dig A "www.${input}" | head -n 1 | sed 's/\\.$//' | fn_rdig | sed 's/\.$//'`
 
 # DIG MX
 # Prva sed komanda bira poslednju reč iz output-a
 # Druga sed komanda radi dve stvari:
 #  - uklanja tačku na kraju
 #  - dodaje dva razmaka (soft tab) na početku svake nove linije
-mx_dig=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | sed 's/\\.$//;s/^/  /'`
-mx_ip=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2>/dev/null | head -n 1`
-mx_hostname=`dig mx "$1" +short 2>/dev/null | sed 's/.* //' | xargs dig +short 2>/dev/null | head -n 1 | xargs dig +short -x 2>/dev/null | sed 's/\.$//'`
+mx_dig=`fn_dig MX "$input" | sed 's/.* //' | sed 's/\\.$//;s/^/  /'`
+mx_ip=`fn_dig MX "$input" | sed 's/.* //' | xargs dig +short 2>/dev/null | head -n 1`
+mx_hostname=`fn_dig MX "$input" | sed 's/.* //' | xargs dig +short 2>/dev/null | fn_rdig | sed 's/\.$//'`
 
 # DIG NS
-ns_dig=`dig ns "$1" +short 2>/dev/null | sed 's/\\.$//;s/^/  /'`
+ns_dig=`fn_dig A "$input" | sed 's/\\.$//;s/^/  /'`
 
 echo "$line" ; echo "Results for domain: $1" ; echo "$line"
 [ -n "$a_ip" ] && echo "IP address: $a_ip" || echo "IP address: not found"
